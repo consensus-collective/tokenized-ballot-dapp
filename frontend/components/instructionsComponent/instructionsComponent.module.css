@@ -84,14 +84,14 @@
   transform: translateY(-3px);
 }
 
-.mint {
+.action {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
-.mintbutton {
+.actionbutton {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -111,8 +111,26 @@
   color: white;
 }
 
+.actiondisabled {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px;
+  gap: 12px;
+
+  width: 192px;
+  height: 40px;
+
+  background-color: gray;
+  color: black;
+  border-radius: 12px;
+}
+
 .message {
   margin-top: 20px;
+  width: 50%;
+  /* overflow: auto; */
 }
 
 .explorerurl {
@@ -171,7 +189,7 @@
   background-color: #ddd;
 }
 
-.proposalTable button {
+.vote {
   padding: 5px 10px;
   background-color: #007bff;
   color: #fff;
@@ -179,6 +197,14 @@
   cursor: pointer;
 }
 
-.proposalTable button:hover {
+.vote:hover {
   background-color: #0056b3;
+}
+
+.disabled {
+  padding: 5px 10px;
+  background-color: gray;
+  margin-left: 10px;
+  color: #fff;
+  border: none;
 }

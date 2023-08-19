@@ -24,28 +24,32 @@ export default function InstructionsComponent() {
       <div>
         <FetchProposals></FetchProposals>
       </div>
-      <div>
-        <Mint></Mint>
-      </div>
+      <Action />
     </div>
   );
 }
 
-function Mint() {
-  const { address, isDisconnected, isConnecting, isConnected } = useAccount();
+function Action() {
+  const { address, isDisconnected, isConnected } = useAccount();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [account, setAccount] = useState<`0x${string}` | undefined>();
+  const [loadingMint, setLoadingMint] = useState<boolean>(false);
+  const [loadingDelegate, setLoadingDelegate] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(true);
   const [message, setMessage] = useState<string>();
 
   const mint = async () => {
-    setLoading(true);
+    setLoadingMint(true);
 
     fetch(`${API_URL}/token/mint/${address}`, { method: "POST" })
       .then((res) => res.json())
       .then((data) => {
         if (data.statusCode === 429) {
+          throw new Error(data.message);
+        }
+
+        if (data.statusCode === 400) {
           throw new Error(data.message);
         }
 
@@ -56,7 +60,12 @@ function Mint() {
         setError(true);
         setMessage(err.message);
       })
-      .finally(() => setLoading(false));
+      .finally(() => setLoadingMint(false));
+  };
+
+  const delegate = () => {
+    const targetAddress = account ?? address;
+    console.log(targetAddress);
   };
 
   const messageStatus = () => {
@@ -77,27 +86,50 @@ function Mint() {
 
   if (isDisconnected) return <React.Fragment />;
   return (
-    <div className={styles.mint}>
-      <button className={styles.mintbutton} disabled={loading} onClick={mint}>
-        {loading && "Loading..."}
-        {isConnecting && "Connecting..."}
-        {!loading && isConnected && "Mint Token"}
-      </button>
+    <React.Fragment>
+      <div className={styles.action}>
+        <div>
+          <button
+            className={
+              !loadingMint ? styles.actionbutton : styles.actiondisabled
+            }
+            disabled={loadingMint}
+            onClick={mint}
+          >
+            {loadingMint && "Loading..."}
+            {!loadingMint && isConnected && "Mint Token"}
+          </button>
+        </div>
+        <div>
+          <button
+            className={
+              !loadingDelegate ? styles.actionbutton : styles.actiondisabled
+            }
+            disabled={loadingDelegate}
+            onClick={delegate}
+          >
+            {loadingDelegate && "Loading..."}
+            {!loadingDelegate && isConnected && "Delegate"}
+          </button>
+        </div>
+      </div>
       <div className={styles.message}>{messageStatus()}</div>
-    </div>
+    </React.Fragment>
   );
 }
 
-function FetchProposals() { // TODO: Bring in actual proposals from API
+function FetchProposals() {
+  const { address, isConnected } = useAccount();
+
   const [loading, setLoading] = useState<boolean>(true);
-  const [proposals, setProposals] = useState<Proposal[]>([])
+  const [proposals, setProposals] = useState<Proposal[]>([]);
   const [error, setError] = useState<boolean>(false);
-  const [errMessage, setErrMessage] = useState<string>()
+  const [errMessage, setErrMessage] = useState<string>();
 
   useEffect(() => {
     fetch(`${API_URL}/ballot/proposals`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.statusCode === 500) {
           throw new Error(data.message);
         }
@@ -105,16 +137,15 @@ function FetchProposals() { // TODO: Bring in actual proposals from API
         setProposals(data.proposals);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setLoading(false);
         setError(true);
         setErrMessage(err.message);
       });
   }, []);
 
-  // TODO: Implement voting and delegate functions to the buttons in Lines 73 and 76
-  if (loading) return <>loading..</>
-  if (error) return errMessage
+  if (loading) return <>Loading...</>;
+  if (error) return errMessage;
   return (
     <div>
       <div className={styles.tableHeader}>
@@ -126,19 +157,20 @@ function FetchProposals() { // TODO: Bring in actual proposals from API
             <th>Name</th>
             <th>Total Votes</th>
             <th>Vote</th>
-            <th>Delegate</th>
           </tr>
         </thead>
         <tbody>
-          {proposals.map(({name, index, voteCount}) => (
+          {proposals.map(({ name, index, voteCount }) => (
             <tr key={index}>
               <td>{name}</td>
               <td>{voteCount}</td>
               <td>
-                <button onClick={() => {}}>Vote</button>
-              </td>
-              <td>
-                <button onClick={() => {}}>Delegate</button>
+                <button
+                  className={isConnected ? styles.vote : styles.disabled}
+                  onClick={() => {}}
+                >
+                  Vote
+                </button>
               </td>
             </tr>
           ))}
