@@ -102,7 +102,27 @@
   width: 192px;
   height: 40px;
 
-  background: rgba(0, 0, 0, 0.9);
+  background: #455acf;
+  /* Grayscale/Metal */
+  box-shadow: 2px 2px 3px rgb(142, 142, 142);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.5s;
+  color: white;
+}
+
+.actionbutton:hover {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px;
+  gap: 12px;
+
+  width: 192px;
+  height: 40px;
+
+  background: #5269ec;
   /* Grayscale/Metal */
   box-shadow: 2px 2px 3px rgb(142, 142, 142);
   border-radius: 12px;
