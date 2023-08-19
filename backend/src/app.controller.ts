@@ -17,6 +17,7 @@ import {
   ContractAddressResponse,
   ReceiptResponse,
   VoteResponse,
+  ProposalResponse,
 } from './app.types';
 
 @Controller()
@@ -48,6 +49,15 @@ export class AppController {
   }
 
   // Ballot endpoint
+  @ApiTags('Ballot')
+  @Get('/ballot/proposals')
+  @ApiOkResponse(ProposalResponse)
+  async getProposals(
+    @Query('network', DefaultNetwork) network: string,
+  ): Promise<AnyObject[]> {
+    return this.appService.getProposals(network);
+  }
+
   @ApiTags('Ballot')
   @Get('/ballot/vote/latest')
   @ApiOkResponse(VoteResponse)

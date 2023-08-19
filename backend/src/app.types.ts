@@ -68,6 +68,18 @@ export class Vote {
   createdAt: string;
 }
 
+export class Proposal {
+  @ApiProperty({ name: 'index', type: Number, example: 2 })
+  index: number;
+
+  @ApiProperty({ name: 'name', type: String, example: 'cat' })
+  name: number;
+
+  @ApiProperty({ name: 'voteCount', type: Number, example: 100000000000 })
+  voteCount: string;
+}
+
 export const ContractAddressResponse = { type: ContractAddress };
 export const ReceiptResponse = { type: Receipt };
 export const VoteResponse = { type: Vote, isArray: true };
+export const ProposalResponse = { type: Proposal, isArray: true };

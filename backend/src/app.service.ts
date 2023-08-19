@@ -4,6 +4,7 @@ import { NetworkConfig, Networks } from './config';
 import { ethers } from 'ethers';
 
 import * as TokenABI from './abi/token.json';
+import * as BallotABI from './abi/ballot.json';
 
 export interface AnyObject {
   [any: string]: any;
@@ -91,5 +92,34 @@ export class AppService {
       network: network,
       address: this.networks[network].contracts.ballot,
     };
+  }
+
+  async getProposals(network: string) {
+    const ballotAddress = this.networks[network].contracts.ballot;
+    const rpcURL = this.networks[network].url;
+
+    const provider = new ethers.JsonRpcProvider(rpcURL);
+    const contract = new ethers.Contract(
+      ballotAddress,
+      BallotABI.abi,
+      provider,
+    );
+
+    const totalProposal = await contract.proposalCount();
+
+    if (totalProposal.toString() === '0') {
+      return [];
+    }
+
+    const proposals: AnyObject[] = [];
+    for (let i = 0; i < totalProposal; i++) {
+      const proposal = await contract.proposals(i);
+      proposals.push({
+        name: ethers.decodeBytes32String(proposal.name),
+        voteCount: Number(proposal.voteCount),
+      });
+    }
+
+    return proposals;
   }
 }
