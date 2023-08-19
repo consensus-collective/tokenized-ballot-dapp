@@ -12,7 +12,7 @@ export interface AnyObject {
 
 // STORAGE
 export const ACCOUNTS: AnyObject = {};
-export const EVENTS: AnyObject[] = [];
+export const VOTES: AnyObject[] = [];
 
 // CONSTANT
 const MINT_VALUE: bigint = ethers.parseUnits('1');
@@ -99,7 +99,7 @@ export class AppService {
   }
 
   async latestVotes() {
-    return EVENTS.slice(0, 5);
+    return VOTES.slice(0, 5);
   }
 
   async getBallotAddress(network: string) {
