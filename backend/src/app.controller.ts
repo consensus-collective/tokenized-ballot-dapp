@@ -1,17 +1,7 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Post,
-  Body,
-  Query,
-  DefaultValuePipe,
-} from '@nestjs/common';
+import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { AnyObject, AppService } from './app.service';
 import {
   ApiBadRequestResponse,
-  ApiBody,
-  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -22,14 +12,11 @@ import {
 } from '@nestjs/swagger';
 import {
   DefaultNetwork,
-  GroupIDParamOptions,
   NetworkQueryOptions,
   AccountParamOptions,
   ContractAddressResponse,
   ReceiptResponse,
-  ProposalResponse,
   VoteResponse,
-  ProposalBodyOptions,
 } from './app.types';
 
 @Controller()
@@ -61,32 +48,6 @@ export class AppController {
   }
 
   // Ballot endpoint
-  @ApiTags('Ballot')
-  @ApiParam(GroupIDParamOptions)
-  @ApiQuery({ name: 'decoded', required: false, type: Boolean, example: true })
-  @ApiOkResponse(ProposalResponse)
-  @ApiNotFoundResponse({ description: 'NotFound' })
-  @Get('/ballot/proposal/:groupId')
-  async find(
-    @Param('groupId') groupId: string,
-    @Query('decoded', new DefaultValuePipe(true)) decoded: string,
-  ) {
-    return this.appService.fetchProposal(groupId, decoded);
-  }
-
-  @ApiTags('Ballot')
-  @ApiParam(GroupIDParamOptions)
-  @ApiBody(ProposalBodyOptions)
-  @ApiCreatedResponse(ProposalResponse)
-  @ApiConflictResponse({ description: 'Conflict' })
-  @Post('/ballot/proposal/:groupId')
-  async createProposal(
-    @Param('groupId') groupId: string,
-    @Body() proposals: string[],
-  ) {
-    return this.appService.createProposal(groupId, proposals);
-  }
-
   @ApiTags('Ballot')
   @Get('/ballot/vote/latest')
   @ApiOkResponse(VoteResponse)

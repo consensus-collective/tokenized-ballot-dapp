@@ -12,23 +12,10 @@ export const NetworkQueryOptions = {
   example: 'sepolia',
 };
 
-export const GroupIDParamOptions = {
-  name: 'groupId',
-  type: String,
-  example: 'animal',
-};
-
 export const AccountParamOptions = {
   name: 'account',
   type: String,
   example: ADDRESS,
-};
-
-export const ProposalBodyOptions = {
-  type: String,
-  isArray: true,
-  required: true,
-  examples: { animal: { value: ['cat', 'dog', 'fish'] } },
 };
 
 export class ContractAddress {
@@ -62,14 +49,6 @@ export class Receipt {
   explorerURL: string;
 }
 
-export class Proposal {
-  @ApiProperty({ name: 'groupId', type: String, example: 'animal' })
-  groupId: string;
-
-  @ApiProperty({ name: 'proposals', isArray: true, example: ['cat', 'dog'] })
-  proposals: string[];
-}
-
 const DATE = new Date().toString();
 
 export class Vote {
@@ -91,5 +70,4 @@ export class Vote {
 
 export const ContractAddressResponse = { type: ContractAddress };
 export const ReceiptResponse = { type: Receipt };
-export const ProposalResponse = { type: Proposal };
 export const VoteResponse = { type: Vote, isArray: true };

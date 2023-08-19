@@ -12,7 +12,6 @@ export interface AnyObject {
 // STORAGE
 export const ACCOUNTS: AnyObject = {};
 export const EVENTS: AnyObject[] = [];
-export const PROPOSALS: AnyObject = {};
 
 // CONSTANT
 const MINT_VALUE: bigint = ethers.parseUnits('1');
@@ -76,40 +75,6 @@ export class AppService {
     return {
       network,
       address: this.networks[network].contracts.token,
-    };
-  }
-
-  async fetchProposal(groupId: string, decoded: string) {
-    if (PROPOSALS[groupId.toLowerCase()] === undefined) {
-      throw new HttpException('NotFound', HttpStatus.NOT_FOUND);
-    }
-
-    const proposals = PROPOSALS[groupId.toLowerCase()];
-
-    if (decoded === 'true') {
-      return {
-        groupId: groupId,
-        proposals: proposals.map((e: string) => ethers.decodeBytes32String(e)),
-      };
-    }
-
-    return { groupId, proposals };
-  }
-
-  async createProposal(groupId: string, data: string[]) {
-    if (PROPOSALS[groupId.toLowerCase()] !== undefined) {
-      throw new HttpException('Conflict', HttpStatus.CONFLICT);
-    }
-
-    const proposals = data.map((e) => e.toLowerCase());
-
-    PROPOSALS[groupId.toLowerCase()] = proposals.map((e) =>
-      ethers.encodeBytes32String(e),
-    );
-
-    return {
-      groupId: groupId.toLowerCase(),
-      proposals: proposals,
     };
   }
 
