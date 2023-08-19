@@ -1,5 +1,5 @@
 "use client";
-import { WagmiConfig, createConfig } from "wagmi";
+import { WagmiConfig, createConfig, sepolia } from "wagmi";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import Navbar from "@/components/instructionsComponent/navigation/navbar";
 import Footer from "@/components/instructionsComponent/navigation/footer";
@@ -14,6 +14,7 @@ const config = createConfig(
     appName: "You Create Web3 Dapp",
 
     // Optional
+    chains: [sepolia],
     appDescription: "Your App Description",
     appUrl: "https://family.co", // your app's url
     appIcon: "https://family.co/logo.png", // your app's logo,no bigger than 1024x1024px (max. 1MB)
