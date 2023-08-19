@@ -52,9 +52,7 @@ export class AppController {
   @ApiTags('Ballot')
   @Get('/ballot/proposals')
   @ApiOkResponse(ProposalResponse)
-  async getProposals(
-    @Query('network', DefaultNetwork) network: string,
-  ): Promise<AnyObject[]> {
+  async getProposals(@Query('network', DefaultNetwork) network: string) {
     return this.appService.getProposals(network);
   }
 

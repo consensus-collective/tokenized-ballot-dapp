@@ -108,7 +108,9 @@ export class AppService {
     const totalProposal = await contract.proposalCount();
 
     if (totalProposal.toString() === '0') {
-      return [];
+      return {
+        proposals: [],
+      };
     }
 
     const proposals: AnyObject[] = [];
@@ -117,9 +119,10 @@ export class AppService {
       proposals.push({
         name: ethers.decodeBytes32String(proposal.name),
         voteCount: Number(proposal.voteCount),
+        index: i,
       });
     }
 
-    return proposals;
+    return { proposals };
   }
 }
