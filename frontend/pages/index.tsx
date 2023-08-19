@@ -55,6 +55,10 @@ export async function getServerSideProps() {
     })
     .catch(() => []);
 
+  proposals.sort((a: any, b: any) => {
+    return Number(b.voteCount) - Number(a.voteCount);
+  });
+
   return {
     props: {
       apiURL: API_URL,

@@ -226,8 +226,8 @@ function FetchProposals(props: Props) {
           </tr>
         </thead>
         <tbody>
-          {proposals.map(({ name, index, voteCount }) => (
-            <tr key={index}>
+          {proposals.map(({ name, index, voteCount }, idx) => (
+            <tr key={index} style={idx === 0 ? {backgroundColor: "gold"} : {}}>
               <td>{name}</td>
               <td>{ethers.formatUnits(voteCount)}</td>
               <td>
