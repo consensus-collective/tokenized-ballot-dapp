@@ -1,6 +1,7 @@
 import styles from "./instructionsComponent.module.css";
 import { useAccount } from "wagmi";
 import React, { useEffect, useState } from "react";
+import { ethers } from "ethers";
 
 const API_URL = "http://localhost:3001/api";
 
@@ -159,6 +160,7 @@ function FetchProposals() {
   const { address, isConnected } = useAccount();
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [balance, setBalance] = useState<string>("0");
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [error, setError] = useState<boolean>(false);
   const [errMessage, setErrMessage] = useState<string>();
@@ -181,12 +183,31 @@ function FetchProposals() {
       });
   }, []);
 
+  useEffect(() => {
+    if (!isConnected) return;
+    fetch(`${API_URL}/token/balance/${address}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.statusCode === 500) {
+          throw new Error(data.message);
+        }
+
+        if (data.statusCode === 404) {
+          throw new Error(data.message);
+        }
+
+        setBalance(data.balance);
+      });
+  }, [isConnected])
+
   if (loading) return <>Loading...</>;
   if (error) return errMessage;
   return (
     <div>
       <div className={styles.tableHeader}>
         <h1>Proposal List</h1>
+        <p>Token balance: {ethers.formatUnits(balance)}</p>
+        <p>Voting power: {ethers.formatUnits(balance)}</p>
       </div>
       <table className={styles.proposalTable}>
         <thead>
@@ -200,7 +221,7 @@ function FetchProposals() {
           {proposals.map(({ name, index, voteCount }) => (
             <tr key={index}>
               <td>{name}</td>
-              <td>{voteCount}</td>
+              <td>{ethers.formatUnits(voteCount)}</td>
               <td>
                 <button
                   className={isConnected ? styles.vote : styles.disabled}
