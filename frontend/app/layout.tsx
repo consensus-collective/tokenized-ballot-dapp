@@ -18,7 +18,7 @@ const config = createConfig(
     appDescription: "Your App Description",
     appUrl: "https://family.co", // your app's url
     appIcon: "https://family.co/logo.png", // your app's logo,no bigger than 1024x1024px (max. 1MB)
-  })
+  }),
 );
 
 export default function RootLayout({
@@ -31,9 +31,15 @@ export default function RootLayout({
       <WagmiConfig config={config}>
         <ConnectKitProvider mode="dark">
           <body>
-            <div style={{ display: "flex", flexDirection: "column", minHeight: "105vh" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "105vh",
+              }}
+            >
               <Navbar />
-              <div style={{flexGrow: 1}}>{children}</div>
+              <div style={{ flexGrow: 1 }}>{children}</div>
               <Footer />
             </div>
           </body>

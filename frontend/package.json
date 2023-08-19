@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write --ignore-path .gitignore ."
   },
   "dependencies": {
     "@types/node": "20.2.5",
@@ -26,5 +27,8 @@
     "typescript": "5.1.3",
     "viem": "^0.3.50",
     "wagmi": "^1.0.9"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.2"
   }
 }
