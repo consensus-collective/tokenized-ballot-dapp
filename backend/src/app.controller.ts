@@ -18,6 +18,7 @@ import {
   ReceiptResponse,
   VoteResponse,
   ProposalResponse,
+  AccountBalanceResponse,
 } from './app.types';
 
 @Controller()
@@ -46,6 +47,19 @@ export class AppController {
   @Get('/token/address')
   async getTokenAddress(@Query('network', DefaultNetwork) network: string) {
     return this.appService.getTokenAddress(network);
+  }
+
+  @ApiTags('Token')
+  @ApiParam(AccountParamOptions)
+  @ApiQuery(NetworkQueryOptions)
+  @ApiOkResponse(AccountBalanceResponse)
+  @ApiNotFoundResponse({ description: 'NotFound' })
+  @Get('/token/balance/:account')
+  async getTokenBalance(
+    @Param('account') account: string,
+    @Query('network', DefaultNetwork) network: string,
+  ) {
+    return this.appService.getBalance(network, account);
   }
 
   // Ballot endpoint

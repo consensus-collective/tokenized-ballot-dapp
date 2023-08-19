@@ -26,6 +26,17 @@ export class ContractAddress {
   address: string;
 }
 
+export class AccountBalance {
+  @ApiProperty({ name: 'network', type: String, example: 'sepolia' })
+  network: string;
+
+  @ApiProperty({ name: 'account', type: String, example: ADDRESS })
+  account: string;
+
+  @ApiProperty({ name: 'balance', type: String, example: '100000000000000' })
+  balance: string;
+}
+
 const MINT_VALUE = ethers.parseUnits('1').toString();
 const EXPLORER = `https://sepolia.etherscan.io/tx/${ethers.ZeroHash}`;
 
@@ -75,7 +86,7 @@ export class Proposal {
   @ApiProperty({ name: 'name', type: String, example: 'cat' })
   name: number;
 
-  @ApiProperty({ name: 'voteCount', type: Number, example: 100000000000 })
+  @ApiProperty({ name: 'voteCount', type: String, example: '100000000000' })
   voteCount: string;
 }
 
@@ -85,6 +96,7 @@ export class Proposals {
 }
 
 export const ContractAddressResponse = { type: ContractAddress };
+export const AccountBalanceResponse = { type: AccountBalance };
 export const ReceiptResponse = { type: Receipt };
 export const VoteResponse = { type: Vote, isArray: true };
 export const ProposalResponse = { type: Proposals };

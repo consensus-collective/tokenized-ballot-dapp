@@ -79,6 +79,25 @@ export class AppService {
     };
   }
 
+  async getBalance(network: string, address: string) {
+    if (!this.networks[network].contracts.token) {
+      throw new HttpException('NotFound', HttpStatus.NOT_FOUND);
+    }
+
+    const tokenAddress = this.networks[network].contracts.token;
+    const rpcURL = this.networks[network].url;
+
+    const provider = new ethers.JsonRpcProvider(rpcURL);
+    const contract = new ethers.Contract(tokenAddress, TokenABI.abi, provider);
+    const balanceOf = await contract.balanceOf(address);
+
+    return {
+      network,
+      account: address,
+      balance: balanceOf.toString(),
+    };
+  }
+
   async latestVotes() {
     return EVENTS.slice(0, 5);
   }
@@ -118,7 +137,7 @@ export class AppService {
       const proposal = await contract.proposals(i);
       proposals.push({
         name: ethers.decodeBytes32String(proposal.name),
-        voteCount: Number(proposal.voteCount),
+        voteCount: proposal.voteCount.toString(),
         index: i,
       });
     }
