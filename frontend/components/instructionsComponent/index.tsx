@@ -1,9 +1,7 @@
-import styles from "./instructionsComponent.module.css";
-import { useAccount } from "wagmi";
+import styles from "../../styles/instructionsComponent.module.css";
+import { useAccount, useContractRead } from "wagmi";
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
-
-const API_URL = "http://localhost:3001/api";
 
 interface Proposal {
   index: number;
@@ -11,7 +9,13 @@ interface Proposal {
   voteCount: number;
 }
 
-export default function InstructionsComponent() {
+interface Props {
+  apiURL: string;
+  ballot: `0x${string}`;
+  proposals: Proposal[];
+}
+
+export default function InstructionsComponent(props: Props) {
   return (
     <div className={styles.container}>
       <header className={styles.header_container}>
@@ -22,15 +26,14 @@ export default function InstructionsComponent() {
           <h3>Group 6 Homework 4</h3>
         </div>
       </header>
-      <div>
-        <FetchProposals></FetchProposals>
-      </div>
-      <Action />
+      <FetchProposals {...props} />
+      <Action {...props} />
     </div>
   );
 }
 
-function Action() {
+function Action(props: Props) {
+  const { apiURL } = props;
   const { address, isDisconnected, isConnected } = useAccount();
 
   const [account, setAccount] = useState<string>("");
@@ -44,7 +47,7 @@ function Action() {
   const mint = async () => {
     setLoadingMint(true);
 
-    fetch(`${API_URL}/token/mint/${address}`, { method: "POST" })
+    fetch(`${apiURL}/token/mint/${address}`, { method: "POST" })
       .then((res) => res.json())
       .then((data) => {
         if (data.statusCode === 429) {
@@ -156,36 +159,42 @@ function Action() {
   );
 }
 
-function FetchProposals() {
+function FetchProposals(props: Props) {
+  const { apiURL, ballot, proposals } = props;
+
   const { address, isConnected } = useAccount();
+  const { data } = useContractRead({
+    address: ballot,
+    abi: [
+      {
+        inputs: [
+          {
+            internalType: "address",
+            name: "account",
+            type: "address",
+          },
+        ],
+        name: "votingPower",
+        outputs: [
+          {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+          },
+        ],
+        stateMutability: "view",
+        type: "function",
+      },
+    ],
+    functionName: "votingPower",
+    args: [address],
+  });
 
-  const [loading, setLoading] = useState<boolean>(true);
   const [balance, setBalance] = useState<string>("0");
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [error, setError] = useState<boolean>(false);
-  const [errMessage, setErrMessage] = useState<string>();
-
-  useEffect(() => {
-    fetch(`${API_URL}/ballot/proposals`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.statusCode === 500) {
-          throw new Error(data.message);
-        }
-
-        setProposals(data.proposals);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setLoading(false);
-        setError(true);
-        setErrMessage(err.message);
-      });
-  }, []);
 
   useEffect(() => {
     if (!isConnected) return;
-    fetch(`${API_URL}/token/balance/${address}`)
+    fetch(`${apiURL}/token/balance/${address}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.statusCode === 500) {
@@ -198,16 +207,14 @@ function FetchProposals() {
 
         setBalance(data.balance);
       });
-  }, [isConnected])
+  }, [isConnected]);
 
-  if (loading) return <>Loading...</>;
-  if (error) return errMessage;
   return (
     <div>
       <div className={styles.tableHeader}>
         <h1>Proposal List</h1>
         <p>Token balance: {ethers.formatUnits(balance)}</p>
-        <p>Voting power: {ethers.formatUnits(balance)}</p>
+        <p>Voting power: {ethers.formatUnits((data as string) ?? "0")}</p>
       </div>
       <table className={styles.proposalTable}>
         <thead>
