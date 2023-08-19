@@ -1,8 +1,8 @@
 import Layout from "@/components/layout";
 import styles from "../styles/page.module.css";
-// import InstructionsComponent from "@/components/instructionsComponent";
-import { ethers } from "ethers";
 import dynamic from "next/dynamic";
+
+import { ethers } from "ethers";
 
 const API_URL = "http://localhost:3001/api";
 
@@ -33,7 +33,7 @@ export async function getServerSideProps() {
     })
     .catch(() => ethers.ZeroAddress);
 
-  const token = await fetch(`${API_URL}/ballot/address`)
+  const token = await fetch(`${API_URL}/token/address`)
     .then((res) => res.json())
     .then((data) => {
       if (data.statusCode === 404) {
