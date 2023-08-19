@@ -33,6 +33,17 @@ export async function getServerSideProps() {
     })
     .catch(() => ethers.ZeroAddress);
 
+  const token = await fetch(`${API_URL}/ballot/address`)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.statusCode === 404) {
+        return ethers.ZeroAddress;
+      }
+
+      return data.address;
+    })
+    .catch(() => ethers.ZeroAddress);
+
   const proposals = await fetch(`${API_URL}/ballot/proposals`)
     .then((res) => res.json())
     .then((data) => {
@@ -48,6 +59,7 @@ export async function getServerSideProps() {
     props: {
       apiURL: API_URL,
       ballot: ballot,
+      token: token,
       proposals: proposals,
     },
   };

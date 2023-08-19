@@ -12,6 +12,7 @@ interface Proposal {
 interface Props {
   apiURL: string;
   ballot: `0x${string}`;
+  token: `0x${string}`;
   proposals: Proposal[];
 }
 
