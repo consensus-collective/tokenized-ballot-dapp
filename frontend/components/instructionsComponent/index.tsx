@@ -1,8 +1,8 @@
 import styles from "./instructionsComponent.module.css";
-import { useAccount, useNetwork, useBalance, useSignMessage, useContractRead } from "wagmi";
-import { useState, useEffect } from "react";
-import { ethers } from 'ethers';
+import { useAccount } from "wagmi";
+import React, { useState } from "react";
 
+const API_URL = "http://localhost:3001/api";
 
 export default function InstructionsComponent() {
   return (
@@ -26,22 +26,66 @@ export default function InstructionsComponent() {
 }
 
 function Mint() {
-  const [signatureMessage, setSignatureMessage] = useState("");
-  const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage();
+  const { address, isDisconnected, isConnecting } = useAccount();
 
+  const [loading, setLoading] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>();
+
+  const mint = async () => {
+      setLoading(true);
+
+      fetch(`${API_URL}/token/mint/${address}`, {method: "POST"})
+        .then(res => res.json())
+        .then(data => {
+          if (data.statusCode === 429) {
+            throw new Error(data.message);
+          }
+
+          setMessage(data.explorerURL);
+          setSuccess(true);
+        })
+        .catch(err => {
+          setError(true);
+          setMessage(err.message);
+        })
+        .finally(() => setLoading(false));
+  };
+
+  const mintButtonText = () => {
+    if (isConnecting) {
+      return <p>Connecting...</p>;
+    }
+
+    if (loading) {
+      return <p>Loading...</p>
+    }
+
+    return <p>Mint Tokens</p>
+  };
+
+  const messageStatus = () => {
+    if (success) {
+      return <a className={styles.explorerurl} href={message}>{message}</a>;
+    }
+
+    if (error) {
+      return <p className={styles.errormessage}>{message}</p>;
+    }
+
+    return <React.Fragment />;
+  }
+
+  if (isDisconnected) return <React.Fragment />
   return (
-    <div>
-      <button className={styles.mintbutton}
-        disabled={isLoading}
-        onClick={() =>
-          //TODO: Bring in Minting function in ERC20 contract API    
-          signMessage({
-            message: signatureMessage,
-          })
-        }
-      >
-      <p>Mint Tokens</p>
-      </button>    
+    <div className={styles.mint}>
+      <button className={styles.mintbutton} disabled={loading} onClick={mint}>
+        {mintButtonText()}
+      </button>
+      <div className={styles.message}>
+        {messageStatus()}
+      </div>
     </div>
   )
 }
