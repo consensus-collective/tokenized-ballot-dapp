@@ -1,12 +1,5 @@
 import styles from "./footer.module.css";
-import {
-  useAccount,
-  useNetwork,
-  useBalance,
-  useSignMessage,
-  useContractRead,
-} from "wagmi";
-import { useState, useEffect } from "react";
+import { useAccount, useNetwork, useBalance } from "wagmi";
 
 export default function Footer() {
   return (
@@ -17,11 +10,7 @@ export default function Footer() {
 }
 
 function PageBody() {
-  return (
-    <div>
-      <WalletInfo></WalletInfo>
-    </div>
-  );
+  return <div>{/* <WalletInfo></WalletInfo> */}</div>;
 }
 
 function WalletInfo() {

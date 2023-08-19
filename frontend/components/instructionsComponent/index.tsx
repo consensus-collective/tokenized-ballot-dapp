@@ -26,7 +26,7 @@ export default function InstructionsComponent() {
 }
 
 function Mint() {
-  const { address, isDisconnected, isConnecting } = useAccount();
+  const { address, isDisconnected, isConnecting, isConnected } = useAccount();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
@@ -53,18 +53,6 @@ function Mint() {
       .finally(() => setLoading(false));
   };
 
-  const mintButtonText = () => {
-    if (isConnecting) {
-      return <p>Connecting...</p>;
-    }
-
-    if (loading) {
-      return <p>Loading...</p>;
-    }
-
-    return <p>Mint Tokens</p>;
-  };
-
   const messageStatus = () => {
     if (success) {
       return (
@@ -85,7 +73,9 @@ function Mint() {
   return (
     <div className={styles.mint}>
       <button className={styles.mintbutton} disabled={loading} onClick={mint}>
-        {mintButtonText()}
+        {loading && "Loading..."}
+        {isConnecting && "Connecting..."}
+        {!loading && isConnected && "Mint Token"}
       </button>
       <div className={styles.message}>{messageStatus()}</div>
     </div>
