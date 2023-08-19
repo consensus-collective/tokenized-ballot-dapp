@@ -1,7 +1,12 @@
 import styles from "./footer.module.css";
-import { useAccount, useNetwork, useBalance, useSignMessage, useContractRead } from "wagmi";
+import {
+  useAccount,
+  useNetwork,
+  useBalance,
+  useSignMessage,
+  useContractRead,
+} from "wagmi";
 import { useState, useEffect } from "react";
-
 
 export default function Footer() {
   return (
@@ -24,7 +29,7 @@ function WalletInfo() {
   const { chain } = useNetwork();
 
   if (address)
-    return(
+    return (
       <div>
         <p>Your account address is: {address}</p>
         <p>Connected to the network: {chain?.name}</p>
@@ -32,13 +37,13 @@ function WalletInfo() {
       </div>
     );
   if (isConnecting)
-    return(
+    return (
       <>
         <p>Loading...</p>
       </>
     );
   if (isDisconnected)
-    return(
+    return (
       <>
         <p>Wallet is Disconnected</p>
       </>
@@ -50,16 +55,13 @@ function WalletInfo() {
   );
 }
 
-function WalletBalance(params: {address:any}) {
-  const { data, isError, isLoading} = useBalance({ address: params.address });
+function WalletBalance(params: { address: any }) {
+  const { data, isError, isLoading } = useBalance({ address: params.address });
   if (isLoading) return <div>Fetching Balance....</div>;
   if (isError) return <div>Error fetching balance</div>;
   return (
     <div>
       Balance: {data?.formatted} {data?.symbol}
     </div>
-  )
+  );
 }
-
-
-

@@ -34,23 +34,23 @@ function Mint() {
   const [message, setMessage] = useState<string>();
 
   const mint = async () => {
-      setLoading(true);
+    setLoading(true);
 
-      fetch(`${API_URL}/token/mint/${address}`, {method: "POST"})
-        .then(res => res.json())
-        .then(data => {
-          if (data.statusCode === 429) {
-            throw new Error(data.message);
-          }
+    fetch(`${API_URL}/token/mint/${address}`, { method: "POST" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.statusCode === 429) {
+          throw new Error(data.message);
+        }
 
-          setMessage(data.explorerURL);
-          setSuccess(true);
-        })
-        .catch(err => {
-          setError(true);
-          setMessage(err.message);
-        })
-        .finally(() => setLoading(false));
+        setMessage(data.explorerURL);
+        setSuccess(true);
+      })
+      .catch((err) => {
+        setError(true);
+        setMessage(err.message);
+      })
+      .finally(() => setLoading(false));
   };
 
   const mintButtonText = () => {
@@ -59,15 +59,19 @@ function Mint() {
     }
 
     if (loading) {
-      return <p>Loading...</p>
+      return <p>Loading...</p>;
     }
 
-    return <p>Mint Tokens</p>
+    return <p>Mint Tokens</p>;
   };
 
   const messageStatus = () => {
     if (success) {
-      return <a className={styles.explorerurl} href={message}>{message}</a>;
+      return (
+        <a className={styles.explorerurl} href={message}>
+          {message}
+        </a>
+      );
     }
 
     if (error) {
@@ -75,24 +79,21 @@ function Mint() {
     }
 
     return <React.Fragment />;
-  }
+  };
 
-  if (isDisconnected) return <React.Fragment />
+  if (isDisconnected) return <React.Fragment />;
   return (
     <div className={styles.mint}>
       <button className={styles.mintbutton} disabled={loading} onClick={mint}>
         {mintButtonText()}
       </button>
-      <div className={styles.message}>
-        {messageStatus()}
-      </div>
+      <div className={styles.message}>{messageStatus()}</div>
     </div>
-  )
+  );
 }
 
 function FetchProposals() {
-
-  const PROPOSALS = ['cat', 'dog', 'fish', 'toilet']; // TODO: Bring in actual proposals from API
+  const PROPOSALS = ["cat", "dog", "fish", "toilet"]; // TODO: Bring in actual proposals from API
 
   // TODO: Implement voting and delegate functions to the buttons in Lines 73 and 76
 
@@ -116,15 +117,15 @@ function FetchProposals() {
               <td>{proposal}</td>
               <td>----</td>
               <td>
-                <button onClick={() => {}}>Vote</button> 
+                <button onClick={() => {}}>Vote</button>
               </td>
               <td>
-              <button onClick={() => {}}>Delegate</button>
+                <button onClick={() => {}}>Delegate</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
-  )
+  );
 }
