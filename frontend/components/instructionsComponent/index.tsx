@@ -1,8 +1,14 @@
 import styles from "./instructionsComponent.module.css";
 import { useAccount } from "wagmi";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const API_URL = "http://localhost:3001/api";
+
+interface Proposal {
+  index: number;
+  name: string;
+  voteCount: number;
+}
 
 export default function InstructionsComponent() {
   return (
@@ -82,11 +88,33 @@ function Mint() {
   );
 }
 
-function FetchProposals() {
-  const PROPOSALS = ["cat", "dog", "fish", "toilet"]; // TODO: Bring in actual proposals from API
+function FetchProposals() { // TODO: Bring in actual proposals from API
+  const [loading, setLoading] = useState<boolean>(true);
+  const [proposals, setProposals] = useState<Proposal[]>([])
+  const [error, setError] = useState<boolean>(false);
+  const [errMessage, setErrMessage] = useState<string>()
+
+  useEffect(() => {
+    fetch(`${API_URL}/ballot/proposals`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.statusCode === 500) {
+          throw new Error(data.message);
+        }
+
+        setProposals(data.proposals);
+        setLoading(false);
+      })
+      .catch(err => {
+        setLoading(false);
+        setError(true);
+        setErrMessage(err.message);
+      });
+  }, []);
 
   // TODO: Implement voting and delegate functions to the buttons in Lines 73 and 76
-
+  if (loading) return <>loading..</>
+  if (error) return errMessage
   return (
     <div>
       <div className={styles.tableHeader}>
@@ -96,16 +124,16 @@ function FetchProposals() {
         <thead>
           <tr>
             <th>Name</th>
-            <th>No. of Votes</th>
+            <th>Total Votes</th>
             <th>Vote</th>
             <th>Delegate</th>
           </tr>
         </thead>
         <tbody>
-          {PROPOSALS.map((proposal, index) => (
+          {proposals.map(({name, index, voteCount}) => (
             <tr key={index}>
-              <td>{proposal}</td>
-              <td>----</td>
+              <td>{name}</td>
+              <td>{voteCount}</td>
               <td>
                 <button onClick={() => {}}>Vote</button>
               </td>
