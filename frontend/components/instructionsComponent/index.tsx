@@ -32,12 +32,13 @@ export default function InstructionsComponent() {
 function Action() {
   const { address, isDisconnected, isConnected } = useAccount();
 
-  const [account, setAccount] = useState<`0x${string}` | undefined>();
+  const [account, setAccount] = useState<string>("");
   const [loadingMint, setLoadingMint] = useState<boolean>(false);
   const [loadingDelegate, setLoadingDelegate] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(true);
   const [message, setMessage] = useState<string>();
+  const [showInput, setShowInput] = useState<boolean>();
 
   const mint = async () => {
     setLoadingMint(true);
@@ -64,8 +65,14 @@ function Action() {
   };
 
   const delegate = () => {
+    if (!showInput) {
+      return setShowInput(!showInput);
+    }
+
     const targetAddress = account ?? address;
     console.log(targetAddress);
+    setShowInput(undefined);
+    setAccount("");
   };
 
   const messageStatus = () => {
@@ -84,12 +91,27 @@ function Action() {
     return <React.Fragment />;
   };
 
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setAccount(value);
+  };
+
   if (isDisconnected) return <React.Fragment />;
   return (
     <React.Fragment>
       <div className={styles.action}>
-        <div>
+        <div
+          onMouseEnter={() => setShowInput(false)}
+          onMouseLeave={() => setShowInput(undefined)}
+        >
           <button
+            style={
+              showInput === undefined
+                ? {}
+                : showInput
+                ? { width: "80px" }
+                : { width: "280px" }
+            }
             className={
               !loadingMint ? styles.actionbutton : styles.actiondisabled
             }
@@ -100,8 +122,15 @@ function Action() {
             {!loadingMint && isConnected && "Mint Token"}
           </button>
         </div>
-        <div>
+        <div onMouseEnter={() => setShowInput(true)}>
           <button
+            style={
+              showInput === undefined
+                ? {}
+                : showInput
+                ? { width: "280px" }
+                : { width: "20px" }
+            }
             className={
               !loadingDelegate ? styles.actionbutton : styles.actiondisabled
             }
@@ -112,6 +141,14 @@ function Action() {
             {!loadingDelegate && isConnected && "Delegate"}
           </button>
         </div>
+      </div>
+      <div style={{ marginTop: "20px" }}>
+        {showInput && (
+          <>
+            <label>Address: </label>
+            <input type="text" value={account} onChange={handleChange} />
+          </>
+        )}
       </div>
       <div className={styles.message}>{messageStatus()}</div>
     </React.Fragment>
