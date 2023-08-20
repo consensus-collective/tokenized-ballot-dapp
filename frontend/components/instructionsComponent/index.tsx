@@ -1,11 +1,11 @@
-import React, { useState } from "react";
 import styles from "../../styles/instructionsComponent.module.css";
-import { useAccount, useContractRead } from "wagmi";
+import { useAccount, useContractRead, useContractReads } from "wagmi";
 import React, { useEffect, useState } from "react";
 import { BigNumberish, ethers, formatEther, parseEther } from "ethers";
 import { ballotContract, walletClient } from "@/network";
 import Ballot from "../../abi/ballot.json";
 import Token from "../../abi/token.json";
+import { BALLOT_ADDRESS } from "@/network/constant";
 
 interface Proposal {
   index: number;
@@ -34,7 +34,6 @@ interface Props {
   proposals: Proposal[];
   queryResults?: QueryResult[];
 }
-
 
 export async function vote(proposalId: number, voteAmount: BigNumberish) {
   const [signer] = await walletClient.getAddresses();
@@ -65,7 +64,7 @@ export async function delegateTo(proposalId: number, voteAmount: BigNumberish) {
     console.log(e);
   }
 }
-        
+
 const DefaultQueryResult: QueryResult[] = [
   { result: "0", status: "" },
   { result: "0", status: "" },
@@ -248,7 +247,7 @@ function FetchProposals(props: Props) {
   };
 
   const { data } = useContractRead({
-    address: ballot,
+    address: BALLOT_ADDRESS,
     abi: [
       {
         inputs: [
@@ -275,8 +274,6 @@ function FetchProposals(props: Props) {
   });
 
   const [balance, setBalance] = useState<string>("0");
-  const { isConnected } = useAccount();
-
 
   const [votingPower, tokenBalance] = queryResults ?? DefaultQueryResult;
 
@@ -290,10 +287,14 @@ function FetchProposals(props: Props) {
               Token balance: {ethers.formatUnits(tokenBalance.result ?? "0")}
             </p>
             <p>Voting power: {ethers.formatUnits(votingPower.result ?? "0")}</p>
-                      <p>Voting Amount: {voteAmount ?? "0"}</p>
-        <>
-          <input type="text" value={voteAmount} onChange={handleAmountChange} />
-        </>
+            <p>Voting Amount: {voteAmount ?? "0"}</p>
+            <>
+              <input
+                type="text"
+                value={voteAmount}
+                onChange={handleAmountChange}
+              />
+            </>
           </React.Fragment>
         ) : (
           <React.Fragment />
