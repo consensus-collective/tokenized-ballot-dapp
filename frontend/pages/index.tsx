@@ -4,8 +4,6 @@ import dynamic from "next/dynamic";
 
 import { ethers } from "ethers";
 
-const API_URL = "http://localhost:3001/api";
-
 const InstructionsComponent = dynamic(
   () => import("@/components/instructionsComponent"),
   { ssr: false },
@@ -22,6 +20,7 @@ export default function Home(props: any) {
 }
 
 export async function getServerSideProps() {
+  const API_URL = process.env.API_URL;
   const ballot = await fetch(`${API_URL}/ballot/address`)
     .then((res) => res.json())
     .then((data) => {
