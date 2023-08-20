@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import styles from "../../styles/instructionsComponent.module.css";
-
-import { useAccount, useContractReads } from "wagmi";
-import { ethers } from "ethers";
-
+import { useAccount, useContractRead } from "wagmi";
+import React, { useEffect, useState } from "react";
+import { BigNumberish, ethers, formatEther, parseEther } from "ethers";
+import { ballotContract, walletClient } from "@/network";
 import Ballot from "../../abi/ballot.json";
 import Token from "../../abi/token.json";
 
@@ -35,6 +35,37 @@ interface Props {
   queryResults?: QueryResult[];
 }
 
+
+export async function vote(proposalId: number, voteAmount: BigNumberish) {
+  const [signer] = await walletClient.getAddresses();
+
+  try {
+    console.debug(
+      `Voting to ${proposalId}, amount: ${formatEther(voteAmount)}`,
+    );
+    await ballotContract.write.vote([proposalId, voteAmount], {
+      account: signer,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function delegateTo(proposalId: number, voteAmount: BigNumberish) {
+  const [signer] = await walletClient.getAddresses();
+
+  try {
+    console.debug(
+      `Voting to ${proposalId}, amount: ${formatEther(voteAmount)}`,
+    );
+    await ballotContract.write.vote([proposalId, voteAmount], {
+      account: signer,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
+        
 const DefaultQueryResult: QueryResult[] = [
   { result: "0", status: "" },
   { result: "0", status: "" },
@@ -208,7 +239,44 @@ function Action(props: Props) {
 function FetchProposals(props: Props) {
   const { proposals, queryResults } = props;
 
+  const { address, isConnected } = useAccount();
+  const [voteAmount, setVoteAmount] = useState<string>("");
+
+  const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setVoteAmount(value);
+  };
+
+  const { data } = useContractRead({
+    address: ballot,
+    abi: [
+      {
+        inputs: [
+          {
+            internalType: "address",
+            name: "account",
+            type: "address",
+          },
+        ],
+        name: "votingPower",
+        outputs: [
+          {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+          },
+        ],
+        stateMutability: "view",
+        type: "function",
+      },
+    ],
+    functionName: "votingPower",
+    args: [address],
+  });
+
+  const [balance, setBalance] = useState<string>("0");
   const { isConnected } = useAccount();
+
 
   const [votingPower, tokenBalance] = queryResults ?? DefaultQueryResult;
 
@@ -222,6 +290,10 @@ function FetchProposals(props: Props) {
               Token balance: {ethers.formatUnits(tokenBalance.result ?? "0")}
             </p>
             <p>Voting power: {ethers.formatUnits(votingPower.result ?? "0")}</p>
+                      <p>Voting Amount: {voteAmount ?? "0"}</p>
+        <>
+          <input type="text" value={voteAmount} onChange={handleAmountChange} />
+        </>
           </React.Fragment>
         ) : (
           <React.Fragment />
@@ -232,7 +304,6 @@ function FetchProposals(props: Props) {
           <tr>
             <th>Name</th>
             <th>Total Votes</th>
-            <th>Vote</th>
           </tr>
         </thead>
         <tbody>
@@ -246,7 +317,9 @@ function FetchProposals(props: Props) {
               <td>
                 <button
                   className={isConnected ? styles.vote : styles.disabled}
-                  onClick={() => {}}
+                  onClick={async () => {
+                    await vote(index, parseEther(voteAmount));
+                  }}
                 >
                   Vote
                 </button>
