@@ -1,7 +1,8 @@
 import styles from "../../styles/instructionsComponent.module.css";
 import { useAccount, useContractRead } from "wagmi";
 import React, { useEffect, useState } from "react";
-import { ethers } from "ethers";
+import { BigNumberish, ethers, formatEther, parseEther } from "ethers";
+import { ballotContract, walletClient } from "@/network";
 
 interface Proposal {
   index: number;
@@ -14,6 +15,36 @@ interface Props {
   ballot: `0x${string}`;
   token: `0x${string}`;
   proposals: Proposal[];
+}
+
+export async function vote(proposalId: number, voteAmount: BigNumberish) {
+  const [signer] = await walletClient.getAddresses();
+
+  try {
+    console.debug(
+      `Voting to ${proposalId}, amount: ${formatEther(voteAmount)}`,
+    );
+    await ballotContract.write.vote([proposalId, voteAmount], {
+      account: signer,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function delegateTo(proposalId: number, voteAmount: BigNumberish) {
+  const [signer] = await walletClient.getAddresses();
+
+  try {
+    console.debug(
+      `Voting to ${proposalId}, amount: ${formatEther(voteAmount)}`,
+    );
+    await ballotContract.write.vote([proposalId, voteAmount], {
+      account: signer,
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export default function InstructionsComponent(props: Props) {
@@ -164,6 +195,13 @@ function FetchProposals(props: Props) {
   const { apiURL, ballot, proposals } = props;
 
   const { address, isConnected } = useAccount();
+  const [voteAmount, setVoteAmount] = useState<string>("");
+
+  const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setVoteAmount(value);
+  };
+
   const { data } = useContractRead({
     address: ballot,
     abi: [
@@ -216,24 +254,32 @@ function FetchProposals(props: Props) {
         <h1>Proposal List</h1>
         <p>Token balance: {ethers.formatUnits(balance)}</p>
         <p>Voting power: {ethers.formatUnits((data as string) ?? "0")}</p>
+        <p>Voting Amount: {voteAmount ?? "0"}</p>
+        <>
+          <input type="text" value={voteAmount} onChange={handleAmountChange} />
+        </>
       </div>
       <table className={styles.proposalTable}>
         <thead>
           <tr>
             <th>Name</th>
             <th>Total Votes</th>
-            <th>Vote</th>
           </tr>
         </thead>
         <tbody>
           {proposals.map(({ name, index, voteCount }, idx) => (
-            <tr key={index} style={idx === 0 ? {backgroundColor: "gold"} : {}}>
+            <tr
+              key={index}
+              style={idx === 0 ? { backgroundColor: "gold" } : {}}
+            >
               <td>{name}</td>
               <td>{ethers.formatUnits(voteCount)}</td>
               <td>
                 <button
                   className={isConnected ? styles.vote : styles.disabled}
-                  onClick={() => {}}
+                  onClick={async () => {
+                    await vote(index, parseEther(voteAmount));
+                  }}
                 >
                   Vote
                 </button>
