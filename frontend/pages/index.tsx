@@ -25,10 +25,7 @@ export async function getServerSideProps() {
   const ballot = await fetch(`${API_URL}/ballot/address`)
     .then((res) => res.json())
     .then((data) => {
-      if (data.statusCode === 404) {
-        return ethers.ZeroAddress;
-      }
-
+      if (data.statusCode === 404) return ethers.ZeroAddress;
       return data.address;
     })
     .catch(() => ethers.ZeroAddress);
@@ -36,10 +33,7 @@ export async function getServerSideProps() {
   const token = await fetch(`${API_URL}/token/address`)
     .then((res) => res.json())
     .then((data) => {
-      if (data.statusCode === 404) {
-        return ethers.ZeroAddress;
-      }
-
+      if (data.statusCode === 404) return ethers.ZeroAddress;
       return data.address;
     })
     .catch(() => ethers.ZeroAddress);
