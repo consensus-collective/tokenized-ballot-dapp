@@ -44,6 +44,10 @@ export async function getServerSideProps() {
     })
     .catch(() => ethers.ZeroAddress);
 
+  const votes = await fetch(`${API_URL}/ballot/vote/latest`)
+    .then((res) => res.json())
+    .then((data) => data);
+
   const proposals = await fetch(`${API_URL}/ballot/proposals`)
     .then((res) => res.json())
     .then((data) => {
@@ -51,7 +55,7 @@ export async function getServerSideProps() {
         return [];
       }
 
-      return data.proposals;
+      return data;
     })
     .catch(() => []);
 
@@ -64,6 +68,7 @@ export async function getServerSideProps() {
       apiURL: API_URL,
       ballot: ballot,
       token: token,
+      votes: votes,
       proposals: proposals,
     },
   };
