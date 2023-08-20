@@ -90,13 +90,8 @@ export class Proposal {
   voteCount: string;
 }
 
-export class Proposals {
-  @ApiProperty({ name: 'proposals', type: Proposal, isArray: true })
-  proposals: Proposal[];
-}
-
 export const ContractAddressResponse = { type: ContractAddress };
 export const AccountBalanceResponse = { type: AccountBalance };
 export const ReceiptResponse = { type: Receipt };
 export const VoteResponse = { type: Vote, isArray: true };
-export const ProposalResponse = { type: Proposals };
+export const ProposalResponse = { type: Proposal, isArray: true };

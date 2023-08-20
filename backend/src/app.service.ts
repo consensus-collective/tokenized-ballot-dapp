@@ -127,9 +127,7 @@ export class AppService {
     const totalProposal = await contract.proposalCount();
 
     if (totalProposal.toString() === '0') {
-      return {
-        proposals: [],
-      };
+      return [];
     }
 
     const proposals: AnyObject[] = [];
@@ -142,6 +140,6 @@ export class AppService {
       });
     }
 
-    return { proposals };
+    return proposals;
   }
 }
