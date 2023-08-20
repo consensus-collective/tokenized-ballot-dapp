@@ -1,7 +1,11 @@
+import React, { useState } from "react";
 import styles from "../../styles/instructionsComponent.module.css";
-import { useAccount, useContractRead } from "wagmi";
-import React, { useEffect, useState } from "react";
+
+import { useAccount, useContractReads } from "wagmi";
 import { ethers } from "ethers";
+
+import Ballot from "../../abi/ballot.json";
+import Token from "../../abi/token.json";
 
 interface Proposal {
   index: number;
@@ -17,15 +21,46 @@ interface Vote {
   createdAt: string;
 }
 
-interface Props {
-  apiURL: string;
-  ballot: `0x${string}`;
-  token: `0x${string}`;
-  proposals: Proposal[];
-  votes: Vote[];
+interface QueryResult {
+  result: any;
+  status: string;
 }
 
+interface Props {
+  apiURL: string;
+  token: `0x${string}`;
+  ballot: `0x${string}`;
+  votes: Vote[];
+  proposals: Proposal[];
+  queryResults?: QueryResult[];
+}
+
+const DefaultQueryResult: QueryResult[] = [
+  { result: "0", status: "" },
+  { result: "0", status: "" },
+];
+
 export default function InstructionsComponent(props: Props) {
+  const { token, ballot } = props;
+  const { address } = useAccount();
+
+  const { data } = useContractReads({
+    contracts: [
+      {
+        address: ballot,
+        abi: Ballot.abi as any,
+        functionName: "votingPower",
+        args: [address ?? ethers.ZeroAddress],
+      },
+      {
+        address: token,
+        abi: Token.abi as any,
+        functionName: "balanceOf",
+        args: [address ?? ethers.ZeroAddress],
+      },
+    ],
+  });
+
   return (
     <div className={styles.container}>
       <header className={styles.header_container}>
@@ -36,7 +71,7 @@ export default function InstructionsComponent(props: Props) {
           <h3>Group 6 Homework 4</h3>
         </div>
       </header>
-      <FetchProposals {...props} />
+      <FetchProposals {...props} queryResults={data as QueryResult[]} />
       <Action {...props} />
       <RecentVotes {...props} />
     </div>
@@ -171,61 +206,26 @@ function Action(props: Props) {
 }
 
 function FetchProposals(props: Props) {
-  const { apiURL, ballot, proposals } = props;
+  const { proposals, queryResults } = props;
 
-  const { address, isConnected } = useAccount();
-  const { data } = useContractRead({
-    address: ballot,
-    abi: [
-      {
-        inputs: [
-          {
-            internalType: "address",
-            name: "account",
-            type: "address",
-          },
-        ],
-        name: "votingPower",
-        outputs: [
-          {
-            internalType: "uint256",
-            name: "",
-            type: "uint256",
-          },
-        ],
-        stateMutability: "view",
-        type: "function",
-      },
-    ],
-    functionName: "votingPower",
-    args: [address],
-  });
+  const { isConnected } = useAccount();
 
-  const [balance, setBalance] = useState<string>("0");
-
-  useEffect(() => {
-    if (!isConnected) return;
-    fetch(`${apiURL}/token/balance/${address}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.statusCode === 500) {
-          throw new Error(data.message);
-        }
-
-        if (data.statusCode === 404) {
-          throw new Error(data.message);
-        }
-
-        setBalance(data.balance);
-      });
-  }, [isConnected]);
+  const [votingPower, tokenBalance] = queryResults ?? DefaultQueryResult;
 
   return (
     <div>
       <div className={styles.tableHeader}>
         <h1>Proposal List</h1>
-        <p>Token balance: {ethers.formatUnits(balance)}</p>
-        <p>Voting power: {ethers.formatUnits((data as string) ?? "0")}</p>
+        {isConnected ? (
+          <React.Fragment>
+            <p>
+              Token balance: {ethers.formatUnits(tokenBalance.result ?? "0")}
+            </p>
+            <p>Voting power: {ethers.formatUnits(votingPower.result ?? "0")}</p>
+          </React.Fragment>
+        ) : (
+          <React.Fragment />
+        )}
       </div>
       <table className={styles.proposalTable}>
         <thead>
