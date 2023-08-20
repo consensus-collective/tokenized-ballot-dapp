@@ -6,7 +6,15 @@ import { ethers } from "ethers";
 interface Proposal {
   index: number;
   name: string;
-  voteCount: number;
+  voteCount: string;
+}
+
+interface Vote {
+  voter: string;
+  proposalIndex: number;
+  proposalName: string;
+  amount: string;
+  createdAt: string;
 }
 
 interface Props {
@@ -14,6 +22,7 @@ interface Props {
   ballot: `0x${string}`;
   token: `0x${string}`;
   proposals: Proposal[];
+  votes: Vote[];
 }
 
 export default function InstructionsComponent(props: Props) {
@@ -29,6 +38,7 @@ export default function InstructionsComponent(props: Props) {
       </header>
       <FetchProposals {...props} />
       <Action {...props} />
+      <RecentVotes {...props} />
     </div>
   );
 }
@@ -227,7 +237,10 @@ function FetchProposals(props: Props) {
         </thead>
         <tbody>
           {proposals.map(({ name, index, voteCount }, idx) => (
-            <tr key={index} style={idx === 0 ? {backgroundColor: "gold"} : {}}>
+            <tr
+              key={index}
+              style={idx === 0 ? { backgroundColor: "gold" } : {}}
+            >
               <td>{name}</td>
               <td>{ethers.formatUnits(voteCount)}</td>
               <td>
@@ -240,6 +253,65 @@ function FetchProposals(props: Props) {
               </td>
             </tr>
           ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function RecentVotes(props: Props) {
+  const { apiURL, votes } = props;
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [voteData, setVoteData] = useState<Vote[]>(votes);
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    fetch(`${apiURL}/ballot/vote/latest`)
+      .then((res) => res.json())
+      .then((data) => setVoteData([...data]))
+      .catch(() => [])
+      .finally(() => setLoading(false));
+  };
+
+  return (
+    <div style={{ marginTop: "20px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "10px",
+        }}
+      >
+        <h3>Recent votes:</h3>
+        <button
+          className={loading ? styles.disabled : styles.recentvote}
+          disabled={loading}
+          onClick={handleRefresh}
+        >
+          {loading ? "Fetching..." : "Refresh"}
+        </button>
+      </div>
+      <table className={styles.proposalTable}>
+        <thead>
+          <tr>
+            <th>Sender</th>
+            <th>Proposal</th>
+            <th>Amount</th>
+            <th>Voted At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {voteData.map(
+            ({ voter, proposalName, amount, createdAt, proposalIndex }) => (
+              <tr key={proposalIndex}>
+                <td>{voter}</td>
+                <td>{proposalName}</td>
+                <td>{ethers.formatUnits(amount)}</td>
+                <td>{createdAt}</td>
+              </tr>
+            ),
+          )}
         </tbody>
       </table>
     </div>

@@ -46,7 +46,8 @@ export async function getServerSideProps() {
 
   const votes = await fetch(`${API_URL}/ballot/vote/latest`)
     .then((res) => res.json())
-    .then((data) => data);
+    .then((data) => data)
+    .catch(() => []);
 
   const proposals = await fetch(`${API_URL}/ballot/proposals`)
     .then((res) => res.json())
