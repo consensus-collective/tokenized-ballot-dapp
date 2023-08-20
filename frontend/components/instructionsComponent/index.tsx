@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styles from "../../styles/instructionsComponent.module.css";
 
-import { useAccount, useContractReads } from "wagmi";
+import { useAccount, useContractReads, useNetwork } from "wagmi";
 import { BigNumberish, ethers, formatEther, parseEther } from "ethers";
 import { ballotContract, walletClient } from "@/network";
 
@@ -55,11 +55,14 @@ export async function vote(proposalId: number, voteAmount: BigNumberish) {
     console.debug(
       `Voting to ${proposalId}, amount: ${formatEther(voteAmount)}`,
     );
-    await ballotContract.write.vote([proposalId, voteAmount], {
+    const res = await ballotContract.write.vote([proposalId, voteAmount], {
       account: signer,
     });
+
+    return res as string;
   } catch (e) {
     console.log(e);
+    throw e;
   }
 }
 
@@ -121,7 +124,7 @@ export default function InstructionsComponent(props: Props) {
           <h3>Group 6 Homework 4</h3>
         </div>
       </header>
-      <body className={styles.body}>
+      <div className={styles.body}>
         <FetchProposals
           {...props}
           queryResults={data as QueryResult[]}
@@ -130,7 +133,7 @@ export default function InstructionsComponent(props: Props) {
         <Action {...props} onChangeMessage={onChangeMessage} />
         <Message message={message} status={status} />
         <RecentVotes {...props} />
-      </body>
+      </div>
     </div>
   );
 }
@@ -237,8 +240,9 @@ function Action(props: Props) {
 }
 
 function FetchProposals(props: Props) {
-  const { proposals, queryResults } = props;
+  const { proposals, queryResults, onChangeMessage } = props;
 
+  const { chain } = useNetwork();
   const { isConnected } = useAccount();
   const [voteAmount, setVoteAmount] = useState<string>("");
 
@@ -247,7 +251,12 @@ function FetchProposals(props: Props) {
     setVoteAmount(value);
   };
 
-  const [votingPower, tokenBalance] = queryResults ?? DefaultQueryResult;
+  const [votingPowerData, tokenBalance] = queryResults ?? DefaultQueryResult;
+
+  const [votingPower, setVotingPower] = useState(votingPowerData?.result);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [proposalData, setProposalData] = useState<Proposal[]>(proposals);
+  const [loading, setLoading] = useState<boolean>(false);
 
   return (
     <div>
@@ -280,7 +289,7 @@ function FetchProposals(props: Props) {
           </tr>
         </thead>
         <tbody>
-          {proposals.map(({ name, index, voteCount }, idx) => (
+          {proposalData.map(({ name, index, voteCount }, idx) => (
             <tr
               key={index}
               style={idx === 0 ? { backgroundColor: "gold" } : {}}
@@ -291,9 +300,47 @@ function FetchProposals(props: Props) {
               </td>
               <td>
                 <button
-                  className={isConnected ? styles.vote : styles.disabled}
+                  className={
+                    isConnected && !loading
+                      ? styles.vote
+                      : idx === currentIndex
+                      ? styles.disabled
+                      : styles.vote
+                  }
+                  disabled={loading && idx === currentIndex}
                   onClick={async () => {
-                    await vote(index, parseEther(voteAmount));
+                    try {
+                      setLoading(true);
+                      setCurrentIndex(idx);
+
+                      const amount = parseEther(voteAmount);
+                      const hash = await vote(index, amount);
+                      const updatedVotingPower = votingPower - amount;
+
+                      setCurrentIndex(-1);
+                      setVotingPower(updatedVotingPower);
+
+                      const explorer = chain?.blockExplorers?.default.url;
+                      const updatedProposal = proposalData.map((e) => {
+                        if (index === e.index) {
+                          const total = e.voteCount + amount;
+                          e.voteCount = total;
+                        }
+
+                        return e;
+                      });
+
+                      updatedProposal.sort((a, b) => {
+                        return Number(b.voteCount) - Number(a.voteCount);
+                      });
+
+                      setProposalData([...updatedProposal]);
+                      onChangeMessage(`${explorer}/tx/${hash}`, Status.SUCCESS);
+                    } catch (err) {
+                      onChangeMessage((err as any).message, Status.ERROR);
+                    } finally {
+                      setLoading(false);
+                    }
                   }}
                 >
                   Vote
