@@ -67,7 +67,7 @@ export class Vote {
   proposalIndex: number;
 
   @ApiProperty({ name: 'proposalName', type: String, example: 'cat' })
-  proposalName: number;
+  proposalName: string;
 
   @ApiProperty({ name: 'account', type: String, example: ADDRESS })
   account: string;
