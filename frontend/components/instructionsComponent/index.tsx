@@ -33,6 +33,18 @@ interface Props {
   votes: Vote[];
   proposals: Proposal[];
   queryResults?: QueryResult[];
+  onChangeMessage: (msg: string, status: Status) => void;
+}
+
+interface MessageProps {
+  message: string;
+  status: Status;
+}
+
+enum Status {
+  NONE = "none",
+  SUCCESS = "success",
+  ERROR = "error",
 }
 
 export async function vote(proposalId: number, voteAmount: BigNumberish) {
@@ -73,7 +85,6 @@ const DefaultQueryResult: QueryResult[] = [
 export default function InstructionsComponent(props: Props) {
   const { token, ballot } = props;
   const { address } = useAccount();
-
   const { data } = useContractReads({
     contracts: [
       {
@@ -91,6 +102,14 @@ export default function InstructionsComponent(props: Props) {
     ],
   });
 
+  const [message, setMessage] = useState<string>("");
+  const [status, setStatus] = useState<Status>(Status.NONE);
+
+  const onChangeMessage = (msg: string, status: Status) => {
+    setMessage(msg);
+    setStatus(status);
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header_container}>
@@ -101,27 +120,31 @@ export default function InstructionsComponent(props: Props) {
           <h3>Group 6 Homework 4</h3>
         </div>
       </header>
-      <FetchProposals {...props} queryResults={data as QueryResult[]} />
-      <Action {...props} />
-      <RecentVotes {...props} />
+      <body className={styles.body}>
+        <FetchProposals
+          {...props}
+          queryResults={data as QueryResult[]}
+          onChangeMessage={onChangeMessage}
+        />
+        <Action {...props} onChangeMessage={onChangeMessage} />
+        <Message message={message} status={status} />
+        <RecentVotes {...props} />
+      </body>
     </div>
   );
 }
 
 function Action(props: Props) {
-  const { apiURL } = props;
+  const { apiURL, onChangeMessage } = props;
   const { address, isDisconnected, isConnected, isConnecting } = useAccount();
 
   const [account, setAccount] = useState<string>("");
-  const [loadingMint, setLoadingMint] = useState<boolean>(false);
-  const [loadingDelegate, setLoadingDelegate] = useState<boolean>(false);
-  const [success, setSuccess] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(true);
-  const [message, setMessage] = useState<string>();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingDelegate] = useState<boolean>(false);
   const [showInput, setShowInput] = useState<boolean>();
 
   const mint = async () => {
-    setLoadingMint(true);
+    setLoading(true);
 
     fetch(`${apiURL}/token/mint/${address}`, { method: "POST" })
       .then((res) => res.json())
@@ -134,14 +157,10 @@ function Action(props: Props) {
           throw new Error(data.message);
         }
 
-        setMessage(data.explorerURL);
-        setSuccess(true);
+        onChangeMessage(data.explorerURL, Status.SUCCESS);
       })
-      .catch((err) => {
-        setError(true);
-        setMessage(err.message);
-      })
-      .finally(() => setLoadingMint(false));
+      .catch((err) => onChangeMessage(err.message, Status.ERROR))
+      .finally(() => setLoading(false));
   };
 
   const delegate = () => {
@@ -153,22 +172,6 @@ function Action(props: Props) {
     console.log(targetAddress);
     setShowInput(undefined);
     setAccount("");
-  };
-
-  const messageStatus = () => {
-    if (success) {
-      return (
-        <a className={styles.explorerurl} href={message}>
-          {message}
-        </a>
-      );
-    }
-
-    if (error) {
-      return <p className={styles.errormessage}>{message}</p>;
-    }
-
-    return <React.Fragment />;
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,14 +195,12 @@ function Action(props: Props) {
                 ? { width: "80px" }
                 : { width: "280px" }
             }
-            className={
-              !loadingMint ? styles.actionbutton : styles.actiondisabled
-            }
-            disabled={loadingMint}
+            className={!loading ? styles.actionbutton : styles.actiondisabled}
+            disabled={loading}
             onClick={mint}
           >
-            {loadingMint && "Loading..."}
-            {!loadingMint && isConnected && "Mint Token"}
+            {loading && "Loading..."}
+            {!loading && isConnected && "Mint Token"}
           </button>
         </div>
         <div onMouseEnter={() => setShowInput(true)}>
@@ -230,7 +231,6 @@ function Action(props: Props) {
           </>
         )}
       </div>
-      <div className={styles.message}>{messageStatus()}</div>
     </React.Fragment>
   );
 }
@@ -390,4 +390,27 @@ function RecentVotes(props: Props) {
       </table>
     </div>
   );
+}
+
+function Message(props: MessageProps) {
+  const { message, status } = props;
+  if (status === Status.SUCCESS) {
+    return (
+      <div className={styles.message}>
+        <a className={styles.explorerurl} href={message}>
+          {message}
+        </a>
+      </div>
+    );
+  }
+
+  if (status === Status.ERROR) {
+    return (
+      <div className={styles.message}>
+        <p className={styles.errormessage}>{message}</p>
+      </div>
+    );
+  }
+
+  return <React.Fragment />;
 }
