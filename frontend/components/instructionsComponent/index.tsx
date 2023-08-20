@@ -45,7 +45,7 @@ export default function InstructionsComponent(props: Props) {
 
 function Action(props: Props) {
   const { apiURL } = props;
-  const { address, isDisconnected, isConnected } = useAccount();
+  const { address, isDisconnected, isConnected, isConnecting } = useAccount();
 
   const [account, setAccount] = useState<string>("");
   const [loadingMint, setLoadingMint] = useState<boolean>(false);
@@ -111,7 +111,7 @@ function Action(props: Props) {
     setAccount(value);
   };
 
-  if (isDisconnected) return <React.Fragment />;
+  if (isDisconnected || isConnecting) return <React.Fragment />;
   return (
     <React.Fragment>
       <div className={styles.action}>

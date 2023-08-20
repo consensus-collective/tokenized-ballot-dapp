@@ -4,9 +4,9 @@ import { AppModule } from './app.module';
 import { INestApplication, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ethers } from 'ethers';
-
-import * as TokenABI from './abi/token.json';
 import { VOTES } from './app.service';
+
+import * as BallotABI from './abi/ballot.json';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -24,7 +24,9 @@ async function bootstrap() {
     logger.log(`Running on ${await app.getUrl()}`, 'NestApplication');
   });
 
-  ballotListener();
+  ballotListener(() => {
+    logger.log('Listening on ballot event', 'NestApplication');
+  });
 }
 
 bootstrap();
@@ -40,12 +42,12 @@ async function initSwagger(app: INestApplication) {
   SwaggerModule.setup('/explorer', app, document);
 }
 
-async function ballotListener() {
+async function ballotListener(callback?: () => void) {
   const config = new ConfigService();
   const ballotAddress = config.get('BALLOT');
   const rpcURL = config.get('SEPOLIA_RPC_URL');
   const provider = new ethers.JsonRpcProvider(rpcURL);
-  const contract = new ethers.Contract(ballotAddress, TokenABI.abi, provider);
+  const contract = new ethers.Contract(ballotAddress, BallotABI.abi, provider);
 
   contract
     .on('Vote', async (sender, proposalIndex, amount) => {
@@ -54,15 +56,18 @@ async function ballotListener() {
       const proposalName = ethers.decodeBytes32String(proposal.name);
       const data = {
         voter: sender,
-        proposalIndex,
+        proposalIndex: Number(proposalIndex),
         proposalName,
         amount: amount.toString(),
-        createdAt: new Date().toString(),
+        createdAt: new Date(),
       };
 
       VOTES.unshift(data);
     })
-    .catch(() => {
+    .catch((err) => {
+      console.log(err);
       // ignore
     });
+
+  callback && callback();
 }
