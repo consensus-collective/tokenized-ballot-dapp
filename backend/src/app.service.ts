@@ -12,7 +12,15 @@ export interface AnyObject {
 
 // STORAGE
 export const ACCOUNTS: AnyObject = {};
-export const VOTES: AnyObject[] = [];
+export const VOTES: AnyObject[] = [
+  {
+    voter: '0x33Cb9c62131915C86DFfCb5C853379865Ae7379d',
+    proposalIndex: 1,
+    proposalName: 'Proposal1',
+    amount: ethers.parseEther('1').toString(),
+    createdAt: new Date(),
+  },
+];
 
 // CONSTANT
 const MINT_VALUE: bigint = ethers.parseUnits('1');
