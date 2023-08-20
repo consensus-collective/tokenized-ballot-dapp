@@ -228,3 +228,11 @@
   color: #fff;
   border: none;
 }
+
+.recentvote {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
