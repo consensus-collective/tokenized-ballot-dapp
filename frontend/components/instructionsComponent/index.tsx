@@ -1,11 +1,12 @@
+import React, { useState } from "react";
 import styles from "../../styles/instructionsComponent.module.css";
-import { useAccount, useContractRead, useContractReads } from "wagmi";
-import React, { useEffect, useState } from "react";
+
+import { useAccount, useContractReads } from "wagmi";
 import { BigNumberish, ethers, formatEther, parseEther } from "ethers";
 import { ballotContract, walletClient } from "@/network";
+
 import Ballot from "../../abi/ballot.json";
 import Token from "../../abi/token.json";
-import { BALLOT_ADDRESS } from "@/network/constant";
 
 interface Proposal {
   index: number;
@@ -238,42 +239,13 @@ function Action(props: Props) {
 function FetchProposals(props: Props) {
   const { proposals, queryResults } = props;
 
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const [voteAmount, setVoteAmount] = useState<string>("");
 
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setVoteAmount(value);
   };
-
-  const { data } = useContractRead({
-    address: BALLOT_ADDRESS,
-    abi: [
-      {
-        inputs: [
-          {
-            internalType: "address",
-            name: "account",
-            type: "address",
-          },
-        ],
-        name: "votingPower",
-        outputs: [
-          {
-            internalType: "uint256",
-            name: "",
-            type: "uint256",
-          },
-        ],
-        stateMutability: "view",
-        type: "function",
-      },
-    ],
-    functionName: "votingPower",
-    args: [address],
-  });
-
-  const [balance, setBalance] = useState<string>("0");
 
   const [votingPower, tokenBalance] = queryResults ?? DefaultQueryResult;
 
@@ -303,8 +275,8 @@ function FetchProposals(props: Props) {
       <table className={styles.proposalTable}>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Total Votes</th>
+            <th style={{ textAlign: "center" }}>Name</th>
+            <th style={{ textAlign: "center" }}>Total Votes</th>
           </tr>
         </thead>
         <tbody>
@@ -314,7 +286,9 @@ function FetchProposals(props: Props) {
               style={idx === 0 ? { backgroundColor: "gold" } : {}}
             >
               <td>{name}</td>
-              <td>{ethers.formatUnits(voteCount)}</td>
+              <td style={{ textAlign: "center" }}>
+                {ethers.formatUnits(voteCount)}
+              </td>
               <td>
                 <button
                   className={isConnected ? styles.vote : styles.disabled}
